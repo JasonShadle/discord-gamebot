@@ -1,0 +1,29 @@
+// these comments are invalid and must be removed before running!
+// the three databases are for Sequelize to connect to the database
+// token is for your Discord bot token to login
+// when done, rename to "config.json"
+{
+    "development": {
+      "username": "root",
+      "password": null,
+      "database": "database_development",
+      "host": "127.0.0.1",
+      "dialect": "mysql"
+    },
+    "test": {
+      "username": "root",
+      "password": null,
+      "database": "database_test",
+      "host": "127.0.0.1",
+      "dialect": "mysql"
+    },
+    "production": {
+      "username": "root",
+      "password": null,
+      "database": "database_production",
+      "host": "127.0.0.1",
+      "dialect": "mysql"
+    },
+  
+    "token": null
+  }
