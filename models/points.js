@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false
         },
         points: {
-            type: DataTypes.BIGINT,
+            type: DataTypes.BIGINT.UNSIGNED,
             allowNull: false
         }
 
