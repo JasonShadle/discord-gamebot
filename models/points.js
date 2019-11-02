@@ -14,7 +14,10 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false
         }
 
-    },{});
+    },{
+        timestamps: false,
+        logging: false
+    });
     points.associate = function(models) {
         // associations
     };
