@@ -40,7 +40,8 @@ client.on('message', msg => {
   console.log(`${authorName}: ${message}`);
   
   // check if bot admin
-  if (authorID in config.admin) {
+  if (config.admin.includes(authorID)) {
+    console.log('admin = true');
     admin = true;
   }
 
@@ -127,30 +128,55 @@ client.on('message', msg => {
   else if (message.startsWith('!points ')) {
     let arg = message.split(' ')[1].trim();
     
-    if (arg == 'help') {
-      
-    }
-    if (arg.startsWith('<@') && arg.endsWith('>')) {
-      let mention = arg;
-      // get the id
-      mention = mention.slice(2, -1);
+    if (arg == 'set' && admin == true) {
+      let user = message.split(' ')[2].trim();
+      let pointAmount = parseInt(message.split(' ')[3].trim(), 10);
 
-      // has a nickname
-      if (mention.startsWith('!')) {
-        mention = mention.slice(1);
-      }
-
-      SequelizeModels.points.findOne({
-        where: {
-          id: mention
+      // turn mention in only id
+      if (user.startsWith('<@') && user.endsWith('>')) {
+        // get the id
+        user= user.slice(2, -1);
+  
+        // has a nickname
+        if (user.startsWith('!')) {
+          user = user.slice(1);
         }
-      })
-      .catch(console.error)
-      .then(response => {
-        channel.send(`${authorMention}: <@${mention}> has ${response.points} points.`);
-      })
+  
+        if (Number.isInteger(pointAmount) && pointAmount >= 0) {
+          SequelizeModels.points.update({
+            points: pointAmount
+          }, {
+            where: {
+              id: user
+            }
+          })
+          .catch(console.error)
+          .then(response => {
+            channel.send(`${authorMention}: <@${user}> now has ${pointAmount} points.`);
+          })
+        }
+      }
+      if (arg.startsWith('<@') && arg.endsWith('>')) {
+        let mention = arg;
+        // get the id
+        mention = mention.slice(2, -1);
 
-    }  
+        // has a nickname
+        if (mention.startsWith('!')) {
+          mention = mention.slice(1);
+        }
+
+        SequelizeModels.points.findOne({
+          where: {
+            id: mention
+          }
+        })
+        .catch(console.error)
+        .then(response => {
+          channel.send(`${authorMention}: <@${mention}> has ${response.points} points.`);
+        })
+      }  
+    }
   }
 })
 
