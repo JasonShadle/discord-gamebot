@@ -25,5 +25,6 @@
       "dialect": "mysql"
     },
   
-    "token": null
+    "token": null,
+    "admin": [null]
   }

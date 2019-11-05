@@ -1,10 +1,10 @@
-const token = require('./config/config.json').token;
+const config = require('./config/config.json');
 const Discord = require('discord.js');
 const client = new Discord.Client();
 const Sequelize = require('sequelize');
 const SequelizeModels = require('./models');
 const slots = require('./slots.js');
-const config = require('./config/config');
+
 
 const SequelizeConnect = new Sequelize({
   host: 'localhost',
@@ -36,29 +36,71 @@ client.on('message', msg => {
   let authorID = authorMention.id;
   let channel = msg.channel;
   let authorName = authorMention.username;
+  let admin = false;
   console.log(`${authorName}: ${message}`);
   
+  // check if bot admin
+  if (authorID in config.admin) {
+    admin = true;
+  }
+
   if (message.startsWith('!slots ')) {
-    let betStr = message.split(' ')[1].trim();
-    let bet = parseInt(betStr, 10);
+    let arg = message.split(' ')[1].trim();
+    let bet = parseInt(arg, 10);
     // user is making a bet
-    if (Number.isInteger(bet) && bet > 0) {
-      // check that bet <= points
-      SequelizeModels.points.findOne({
-        where: {
-          id: authorID
-        }
-      })
-      .then(response => {
-        // have enough points
-        if (response.points >= bet) {
-          slots(authorID, bet, channel);
-        } else {
-          channel.send(`${authorMention}: You don't have enough points.`);
-        }
-      }).catch(console.error); 
+    if (Number.isInteger(bet)) {
+      if (bet >= 1) {
+        // check that bet <= points
+        SequelizeModels.points.findOne({
+          where: {
+            id: authorID
+          }
+        })
+        .then(response => {
+          // have enough points
+          if (response == null) {
+            SequelizeModels.points.create({
+              id: authorID,
+              name: authorName,
+              points: 2000
+            })
+            .then(response => {
+              if (bet <= 2000) {
+                slots(authorID, bet, channel);
+              } else {
+                channel.send(`${authorMention}: You don't have enough points.`);
+              }
+            })
+          }
+          else {
+            if (response.points >= bet) {
+              slots(authorID, bet, channel);
+            } else if (response.points < bet) {
+              channel.send(`${authorMention}: You don't have enough points.`);
+            }
+          }
+        }).catch(console.error);
+      }
+      else {
+        channel.send(`${authorMention}: You must bet a positive number`);
+      }
     }
-  } else if (message == '!points') {
+    else if (arg == 'help') {
+      let embed = new Discord.RichEmbed()
+      .setTitle('Slots Help')
+      .addField('!points','See your current balance')
+      .addField('!slots [bet]','Spin the slots')
+      .addField(':apple: = x1', '\u200b')
+      .addField(':strawberry: = x2', '\u200b')
+      .addField(':tangerine: = x3', '\u200b')
+      .addField(':eggplant: = x5', '\u200b')
+      .addField(':peach: = x10', '\u200b');
+
+      channel.send(`${authorMention}:`, embed=embed);
+    }
+    
+  } 
+  else if (message == '!points') {
     SequelizeModels.points.findOne({
       where: {
         id: authorID
@@ -82,6 +124,34 @@ client.on('message', msg => {
       
     })
   }
+  else if (message.startsWith('!points ')) {
+    let arg = message.split(' ')[1].trim();
+    
+    if (arg == 'help') {
+      
+    }
+    if (arg.startsWith('<@') && arg.endsWith('>')) {
+      let mention = arg;
+      // get the id
+      mention = mention.slice(2, -1);
+
+      // has a nickname
+      if (mention.startsWith('!')) {
+        mention = mention.slice(1);
+      }
+
+      SequelizeModels.points.findOne({
+        where: {
+          id: mention
+        }
+      })
+      .catch(console.error)
+      .then(response => {
+        channel.send(`${authorMention}: <@${mention}> has ${response.points} points.`);
+      })
+
+    }  
+  }
 })
 
-client.login(token);
+client.login(config.token);
