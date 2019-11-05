@@ -41,7 +41,6 @@ client.on('message', msg => {
   if (message.startsWith('!slots ')) {
     let betStr = message.split(' ')[1].trim();
     let bet = parseInt(betStr, 10);
-    console.log(`Bet: ${bet}`);
     // user is making a bet
     if (Number.isInteger(bet) && bet > 0) {
       // check that bet <= points
@@ -53,13 +52,11 @@ client.on('message', msg => {
       .then(response => {
         // have enough points
         if (response.points >= bet) {
-          slots(authorID,bet, channel);
+          slots(authorID, bet, channel);
         } else {
           channel.send(`${authorMention}: You don't have enough points.`);
         }
-      }).catch(console.error);
-
-      
+      }).catch(console.error); 
     }
   } else if (message == '!points') {
     SequelizeModels.points.findOne({

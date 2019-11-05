@@ -25,43 +25,40 @@ function pickItemWeight() {
   }
 }
 
-function updateUserPoints(userID, pointsChange, roll, mult, pointsWon) {
-  let currentPoints = 0;
-  // get current points
-  SequelizeModels.points.findOne({
-    where: {
-      id: userID
-    }
-  })
-  .then(response => {
-    currentPoints = parseInt(response.points,10) + pointsChange;
-    SequelizeModels.points.update({
-      points: currentPoints
-    }, {
+function updateUserPoints(userID, pointsChange) {
+    let currentPoints = 0;
+    // get current points
+    SequelizeModels.points.findOne({
       where: {
         id: userID
       }
     })
     .then(response => {
-      console.log(`db currentpoints: ${currentPoints}`)
-      return printResult(roll, mult, pointsWon, currentPoints);
+      currentPoints = parseInt(response.points,10) + pointsChange;
+      SequelizeModels.points.update({
+        points: currentPoints
+      }, {
+        where: {
+          id: userID
+        }
+      })
     })
-  })
-  .catch(console.error)
+    .catch(console.error)
+    
+
+  return currentPoints;
 }
 
-function printResult(roll, mult, pointsWon, currPoints, channel) {
-  console.log(`currPoints: ${currPoints}`);
+function printResult(roll, mult, pointsWon, currPoints) {
   let embed = new Discord.RichEmbed()
     .setTitle('**Slots Bot Roll**')
     .addField('\u200b',`${slotEmotes[roll[0]]} ${slotEmotes[roll[1]]} ${slotEmotes[roll[2]]} **Win Multiplier**: ${mult}`)
     .addField('\u200b',`${slotEmotes[roll[3]]} ${slotEmotes[roll[4]]} ${slotEmotes[roll[5]]} **Points Won**: ${pointsWon}`)
     .addField('\u200b',`${slotEmotes[roll[6]]} ${slotEmotes[roll[7]]} ${slotEmotes[roll[8]]} **Current Points**: ${currPoints}`)
-    .setFooter('Points have no monetary value');
   return embed;
 }
 
-module.exports = function spinSlots(userID, bet, channel) {
+function spinSlots(userID, bet) {
   bet = parseInt(bet);
   console.log(`spinslots bet: ${bet}`);
   let thisWinMultiplier = 0;
@@ -125,6 +122,39 @@ module.exports = function spinSlots(userID, bet, channel) {
   // TODO: figure out why I have to parseInt when both are ints
   let pointsWon = parseInt(bet) * parseInt(thisWinMultiplier);
   pointChange = parseInt(pointsWon,10) - parseInt(bet,10);
-  // TODO: change second pointsWon to current points from database call
-  return updateUserPoints(userID, parseInt(pointChange, 10), slotRoll, thisWinMultiplier, pointsWon, channel);
-};
+  return {slots: slotRoll, pointChange: pointChange, 
+          pointsWon: pointsWon, winMultiplier: thisWinMultiplier}
+}
+module.exports = function slots(userID, bet, channel) {
+  let pointChange = 0;
+  let slots = [];
+  let multiplier = 0;
+  let embed = [];
+  let pointsWon = 0;
+  let p = new Promise((resolve, reject) => {
+    let data = spinSlots(userID, bet);
+    if (data != undefined) {
+      resolve(data);
+    } else {
+      reject('Error with spinSlots');
+    }
+  });
+
+  p.then(data => {
+    console.log('1');
+    pointChange = data.pointChange;
+    slots = data.slots;
+    multiplier = data.winMultiplier;
+    pointsWon = data.pointsWon;
+    return updateUserPoints(userID, data.pointChange);
+  }).catch(console.error())
+
+  .then(newPoints => {
+    console.log(newPoints);
+    return printResult(slots, multiplier, pointsWon, newPoints);
+  }).catch(console.error())
+
+  .then(embed => {
+    channel.send(`<@${userID}>:`, embed=embed);
+  }).catch(console.error());
+}
