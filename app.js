@@ -155,27 +155,27 @@ client.on('message', msg => {
           })
         }
       }
-      if (arg.startsWith('<@') && arg.endsWith('>')) {
-        let mention = arg;
-        // get the id
-        mention = mention.slice(2, -1);
-
-        // has a nickname
-        if (mention.startsWith('!')) {
-          mention = mention.slice(1);
-        }
-
-        SequelizeModels.points.findOne({
-          where: {
-            id: mention
-          }
-        })
-        .catch(console.error)
-        .then(response => {
-          channel.send(`${authorMention}: <@${mention}> has ${response.points} points.`);
-        })
-      }  
     }
+    if (arg.startsWith('<@') && arg.endsWith('>')) {
+      let mention = arg;
+      // get the id
+      mention = mention.slice(2, -1);
+
+      // has a nickname
+      if (mention.startsWith('!')) {
+        mention = mention.slice(1);
+      }
+
+      SequelizeModels.points.findOne({
+        where: {
+          id: mention
+        }
+      })
+      .catch(console.error)
+      .then(response => {
+        channel.send(`${authorMention}: <@${mention}> has ${response.points} points.`);
+      })
+    }  
   }
 })
 
