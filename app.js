@@ -4,6 +4,7 @@ const client = new Discord.Client();
 const Sequelize = require('sequelize');
 const SequelizeModels = require('./models');
 const slots = require('./slots.js');
+const db = require('./database.js')
 
 
 const SequelizeConnect = new Sequelize({
@@ -51,19 +52,11 @@ client.on('message', msg => {
     if (Number.isInteger(bet)) {
       if (bet >= 1) {
         // check that bet <= points
-        SequelizeModels.points.findOne({
-          where: {
-            id: authorID
-          }
-        })
+        db.getUserPoints(authorID)
         .then(response => {
           // have enough points
           if (response == null) {
-            SequelizeModels.points.create({
-              id: authorID,
-              name: authorName,
-              points: 2000
-            })
+            db.addUserPoints(authorID, authorName, 2000)
             .then(response => {
               if (bet <= 2000) {
                 slots(authorID, bet, channel);
@@ -73,9 +66,9 @@ client.on('message', msg => {
             })
           }
           else {
-            if (response.points >= bet) {
+            if (response >= bet) {
               slots(authorID, bet, channel);
-            } else if (response.points < bet) {
+            } else if (response < bet) {
               channel.send(`${authorMention}: You don't have enough points.`);
             }
           }
@@ -98,31 +91,21 @@ client.on('message', msg => {
 
       channel.send(`${authorMention}:`, embed=embed);
     }
-    
   } 
   else if (message == '!points') {
-    SequelizeModels.points.findOne({
-      where: {
-        id: authorID
+    db.getUserPoints(authorID)
+    .then(response => {
+      if (response != null) {
+        channel.send(`${authorMention}: You have ${response} points.`);
       }
-    }).then(response => {
-      let points = 0;
-      // if response == null, need to add to database
-      if (response == null) {
-        SequelizeModels.points.create({
-          id: authorID,
-          name: authorName,
-          points: 2000
-        }).then(pointsUpdate => {
-          points = 2000;
-          channel.send(`${authorMention}: You have ${points} points.`);
-        }).catch(console.error);
-      } else {
-        points = response.points;
-        channel.send(`${authorMention}: You have ${points} points.`);
+      else {
+        db.addUserPoints(authorID, authorName, 2000)
+        .catch(console.error)
+        .then(response => {
+          channel.send(`${authorMention}: You have 2000 points`);
+        });
       }
-      
-    })
+    });
   }
   else if (message.startsWith('!points ')) {
     let arg = message.split(' ')[1].trim();
@@ -142,13 +125,7 @@ client.on('message', msg => {
         }
   
         if (Number.isInteger(pointAmount) && pointAmount >= 0) {
-          SequelizeModels.points.update({
-            points: pointAmount
-          }, {
-            where: {
-              id: user
-            }
-          })
+          db.setUserPoints(user, pointAmount)
           .catch(console.error)
           .then(response => {
             channel.send(`${authorMention}: <@${user}> now has ${pointAmount} points.`);
@@ -166,14 +143,10 @@ client.on('message', msg => {
         mention = mention.slice(1);
       }
 
-      SequelizeModels.points.findOne({
-        where: {
-          id: mention
-        }
-      })
+      db.getUserPoints(mention)
       .catch(console.error)
-      .then(response => {
-        channel.send(`${authorMention}: <@${mention}> has ${response.points} points.`);
+      .then(points => {
+        channel.send(`${authorMention}: <@${mention}> has ${points} points.`);
       })
     }  
   }

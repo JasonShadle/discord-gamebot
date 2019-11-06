@@ -17,9 +17,9 @@
 const Discord = require("discord.js");
 const SequelizeModels = require('./models');
 const winMultiplier = [1,2,3,5,10];
-//need to adjust, stole Mike's values
 const itemWeights = [40, 70, 90, 100, 108];
 const slotEmotes = [':apple:', ':strawberry:', ':tangerine:', ':eggplant:', ':peach:'];
+const db = require("./database.js")
 
 function randomInt(min, max) {
     return Math.floor(Math.random()*(max - min + 1) + min);
@@ -39,32 +39,6 @@ function pickItemWeight() {
   } else {
     return 4;
   }
-}
-
-function updateUserPoints(userID, pointsChange) {
-  return new Promise(function(resolve, reject) {
-    let currentPoints = 0;
-    // get current points
-    SequelizeModels.points.findOne({
-      where: {
-        id: userID
-      }
-    })
-    .then(response => {
-      currentPoints = parseInt(response.points,10) + pointsChange;
-      SequelizeModels.points.update({
-        points: currentPoints
-      }, {
-        where: {
-          id: userID
-        }
-      })
-    })
-    .catch(console.error)
-    .then(response => {
-      resolve(currentPoints);
-    })
-  })
 }
 
 function getPrintEmbed(roll, mult, pointsWon, currPoints, win) {
@@ -172,17 +146,17 @@ module.exports = function slots(userID, bet, channel) {
     multiplier = data.winMultiplier;
     pointsWon = data.pointsWon;
     win = data.win;
-    updateUserPoints(userID, data.pointChange)
-    .then(newPoints => {
-      getPrintEmbed(slots, multiplier, pointsWon, newPoints, win)
-      .then(embed => {
-        channel.send(`<@${userID}>:`, embed=embed);
-      }).catch(console.error());
+
+    db.getUserPoints(userID)
+    .then(points => {
+      let newPoints = points + pointChange;
+      db.setUserPoints(userID, newPoints)
+      .then(response => {
+        getPrintEmbed(slots, multiplier, pointsWon, newPoints, win)
+        .then(embed => {
+          channel.send(`<@${userID}>:`, embed=embed)
+        }).catch(console.error())
+      }).catch(console.error())
     }).catch(console.error())
   }).catch(console.error())
 }
-
-
-
-
-  
