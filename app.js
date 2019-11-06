@@ -41,7 +41,6 @@ client.on('message', msg => {
   
   // check if bot admin
   if (config.admin.includes(authorID)) {
-    console.log('admin = true');
     admin = true;
   }
 
