@@ -149,7 +149,7 @@ module.exports = function slots(userID, bet, channel) {
 
     db.getUserPoints(userID)
     .then(points => {
-      let newPoints = points + pointChange;
+      let newPoints = points.points + pointChange;
       db.setUserPoints(userID, newPoints)
       .then(response => {
         getPrintEmbed(slots, multiplier, pointsWon, newPoints, win)

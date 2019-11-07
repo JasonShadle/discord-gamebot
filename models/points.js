@@ -12,6 +12,10 @@ module.exports = (sequelize, DataTypes) => {
         points: {
             type: DataTypes.BIGINT.UNSIGNED,
             allowNull: false
+        },
+        highscore: {
+            type: DataTypes.BIGINT.UNSIGNED,
+            allowNull: false
         }
 
     },{

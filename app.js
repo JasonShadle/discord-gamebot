@@ -66,9 +66,9 @@ client.on('message', msg => {
             })
           }
           else {
-            if (response >= bet) {
+            if (response.points >= bet) {
               slots(authorID, bet, channel);
-            } else if (response < bet) {
+            } else if (response.points < bet) {
               channel.send(`${authorMention}: You don't have enough points.`);
             }
           }
@@ -96,7 +96,7 @@ client.on('message', msg => {
     db.getUserPoints(authorID)
     .then(response => {
       if (response != null) {
-        channel.send(`${authorMention}: You have ${response} points.`);
+        channel.send(`${authorMention}: You have ${response.points} points`);
       }
       else {
         db.addUserPoints(authorID, authorName, 2000)
@@ -110,30 +110,32 @@ client.on('message', msg => {
   else if (message.startsWith('!points ')) {
     let arg = message.split(' ')[1].trim();
     
-    if (arg == 'set' && admin == true) {
-      let user = message.split(' ')[2].trim();
-      let pointAmount = parseInt(message.split(' ')[3].trim(), 10);
-
-      // turn mention in only id
-      if (user.startsWith('<@') && user.endsWith('>')) {
-        // get the id
-        user= user.slice(2, -1);
+    if (arg == 'set') {
+      if (admin) {
+        let user = message.split(' ')[2].trim();
+        let pointAmount = parseInt(message.split(' ')[3].trim(), 10);
   
-        // has a nickname
-        if (user.startsWith('!')) {
-          user = user.slice(1);
-        }
-  
-        if (Number.isInteger(pointAmount) && pointAmount >= 0) {
-          db.setUserPoints(user, pointAmount)
-          .catch(console.error)
-          .then(response => {
-            channel.send(`${authorMention}: <@${user}> now has ${pointAmount} points.`);
-          })
+        // turn mention in only id
+        if (user.startsWith('<@') && user.endsWith('>')) {
+          // get the id
+          user= user.slice(2, -1);
+    
+          // has a nickname
+          if (user.startsWith('!')) {
+            user = user.slice(1);
+          }
+    
+          if (Number.isInteger(pointAmount) && pointAmount >= 0) {
+            db.setUserPoints(user, pointAmount)
+            .catch(console.error)
+            .then(response => {
+              channel.send(`${authorMention}: <@${user}> now has ${pointAmount} points.`);
+            })
+          }
         }
       }
     }
-    if (arg.startsWith('<@') && arg.endsWith('>')) {
+    else if (arg.startsWith('<@') && arg.endsWith('>')) {
       let mention = arg;
       // get the id
       mention = mention.slice(2, -1);
@@ -146,9 +148,12 @@ client.on('message', msg => {
       db.getUserPoints(mention)
       .catch(console.error)
       .then(points => {
-        channel.send(`${authorMention}: <@${mention}> has ${points} points.`);
+        channel.send(`${authorMention}: <@${mention}> has ${points.points} points.`);
       })
-    }  
+    }
+    else if (arg == 'top') {
+      // leaderboards
+    }
   }
 })
 
