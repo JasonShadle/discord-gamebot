@@ -41,20 +41,21 @@ function pickItemWeight() {
   }
 }
 
-function getPrintEmbed(roll, mult, pointsWon, currPoints, win) {
-  let color = 'RED';
+function sendMessage(roll, mult, pointsWon, currPoints, win, userID, channel) {
+  let color = 16007990;
   if (win) {
-    color = 'GREEN'
+    color = 5025616;
   }
-  return new Promise(function(resolve, reject) {
-    let embed = new Discord.RichEmbed()
-    .setColor(color)
-    .setTitle('**Slots Bot Roll**')
-    .setDescription('Good luck!')
-    .addField('\u200b',`${slotEmotes[roll[0]]} ${slotEmotes[roll[1]]} ${slotEmotes[roll[2]]} **Win Multiplier**: ${mult}`)
-    .addField('\u200b',`${slotEmotes[roll[3]]} ${slotEmotes[roll[4]]} ${slotEmotes[roll[5]]} **Points Won**: ${pointsWon}`)
-    .addField('\u200b',`${slotEmotes[roll[6]]} ${slotEmotes[roll[7]]} ${slotEmotes[roll[8]]} **Current Points**: ${currPoints}`)
-    resolve(embed);
+
+  channel.send({
+    embed: {
+      "content": `<@${userID}>:`, 
+      "description": `${slotEmotes[roll[0]]} ${slotEmotes[roll[1]]} ${slotEmotes[roll[2]]} <:transparent:642212246109290496> \
+        **Win Multiplier**: ${mult} \n\n${slotEmotes[roll[3]]} ${slotEmotes[roll[4]]} ${slotEmotes[roll[5]]} \
+        <:transparent:642212246109290496> **Points Won**: ${pointsWon} \n\n${slotEmotes[roll[6]]} \
+        ${slotEmotes[roll[7]]} ${slotEmotes[roll[8]]} <:transparent:642212246109290496> **Current Points**: ${currPoints}`,
+      "color": color
+    }
   });
 }
 
@@ -152,10 +153,7 @@ module.exports = function slots(userID, bet, channel) {
       let newPoints = points.points + pointChange;
       db.setUserPoints(userID, newPoints)
       .then(response => {
-        getPrintEmbed(slots, multiplier, pointsWon, newPoints, win)
-        .then(embed => {
-          channel.send(`<@${userID}>:`, embed=embed)
-        }).catch(console.error())
+        sendMessage(slots, multiplier, pointsWon, newPoints, win, userID, channel);
       }).catch(console.error())
     }).catch(console.error())
   }).catch(console.error())

@@ -152,7 +152,33 @@ client.on('message', msg => {
       })
     }
     else if (arg == 'top') {
-      // leaderboards
+      console.log('in points top');
+      db.getHighscores()
+      .catch(console.error)
+      .then(response => {
+        console.log(`response[0]: ${response[0].name}`);
+        let count = 0, count2 = 0;
+        let embedMessage = '';
+        
+        for (let i = 0; i < response.length; i++) {
+          let highscore = response[i].highscore.toString();
+          let name = response[i].name;
+          if (response[count+1] != undefined) {
+            embedMessage += `**${i+1}. ${name}: **${highscore}\n\n`;
+          } else {
+            embedMessage += `**${i+1}. ${name}: **${highscore}\n\n`;
+          }
+          count++;
+        }
+        
+        channel.send({
+          embed: {
+            "content": `${authorMention}:`,
+            "description": embedMessage
+          }
+        });
+      })
+      .catch(console.error); 
     }
   }
 })

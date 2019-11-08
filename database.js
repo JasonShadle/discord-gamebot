@@ -79,8 +79,26 @@ function setUserHighscore(id, points) {
   })
 }
 
+function getHighscores() {
+  console.log('getHighScores');
+  return new Promise(function(resolve, reject) {
+    SequelizeModels.points.findAll({
+      raw: true,
+      limit: 5,
+      order: [
+        ['highscore', 'desc']
+      ]
+    })
+    .catch(console.error)
+    .then(response => {
+      resolve(response);
+    })
+  })
+}
+
 module.exports = {
   getUserPoints: getUserPoints,
   setUserPoints: setUserPoints,
-  addUserPoints: addUserPoints
+  addUserPoints: addUserPoints,
+  getHighscores: getHighscores
 };
