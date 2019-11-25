@@ -47,15 +47,15 @@ function sendMessage(roll, mult, pointsWon, currPoints, win, userID, channel) {
     color = 5025616;
   }
 
-  channel.send({
-    embed: {
-      "content": `<@${userID}>:`, 
-      "description": `${slotEmotes[roll[0]]} ${slotEmotes[roll[1]]} ${slotEmotes[roll[2]]} <:transparent:642212246109290496> \
-        **Win Multiplier**: ${mult} \n\n${slotEmotes[roll[3]]} ${slotEmotes[roll[4]]} ${slotEmotes[roll[5]]} \
-        <:transparent:642212246109290496> **Points Won**: ${pointsWon} \n\n${slotEmotes[roll[6]]} \
-        ${slotEmotes[roll[7]]} ${slotEmotes[roll[8]]} <:transparent:642212246109290496> **Current Points**: ${currPoints}`,
-      "color": color
-    }
+  channel.send(`<@${userID}>:`,
+    {
+      embed: { 
+        "description": `${slotEmotes[roll[0]]} ${slotEmotes[roll[1]]} ${slotEmotes[roll[2]]} <:transparent:642212246109290496> \
+          **Win Multiplier**: ${mult} \n\n${slotEmotes[roll[3]]} ${slotEmotes[roll[4]]} ${slotEmotes[roll[5]]} \
+          <:transparent:642212246109290496> **Points Won**: ${pointsWon} \n\n${slotEmotes[roll[6]]} \
+          ${slotEmotes[roll[7]]} ${slotEmotes[roll[8]]} <:transparent:642212246109290496> **Current Points**: ${currPoints}`,
+        "color": color
+      }
   });
 }
 

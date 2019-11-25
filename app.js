@@ -171,7 +171,8 @@ client.on('message', msg => {
           count++;
         }
         
-        channel.send({
+        channel.send(`${authorMention}:`,
+        {
           embed: {
             "content": `${authorMention}:`,
             "description": embedMessage
