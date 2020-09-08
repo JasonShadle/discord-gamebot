@@ -80,7 +80,6 @@ function setUserHighscore(id, points) {
 }
 
 function getHighscores() {
-  console.log('getHighScores');
   return new Promise(function(resolve, reject) {
     SequelizeModels.points.findAll({
       raw: true,
@@ -95,10 +94,65 @@ function getHighscores() {
     })
   })
 }
-
+function getActiveBJHand(userID) {
+  return new Promise(function(resolve, reject) {
+    SequelizeModels.blackjack.findOne({
+      where: {
+        userID: userID,
+        active: true
+      }
+    })
+    .catch(console.error)
+    .then(response => {
+      if (response === null) {
+        resolve(null);
+      }
+      else {
+        resolve({pCards: response.playerCards, dCards: response.dealerCards, bet: response.bet, gameID: response.gameID})
+      }
+    })
+  })
+}
+function setBJHand(gameID, pHand, dHand, active) {
+  return new Promise(function(resolve, reject) {
+    SequelizeModels.blackjack.update({
+      playerCards: pHand.toString(),
+      dealerCards: dHand.toString(),
+      active: active
+    }, {
+      where: {
+        gameID: gameID,
+        active: true
+      }
+    })
+    .catch(console.error)
+    .then(response => {
+      resolve(true)
+    })
+  })
+}
+function startBJHand(id, bet, pHand, dHand, active) {
+  bet = parseInt(bet)
+  return new Promise(function(resolve, reject) {
+    SequelizeModels.blackjack.create({
+      userID: id,
+      bet: bet,
+      playerCards: pHand.toString(),
+      dealerCards: dHand.toString(),
+      active: active
+    })
+    .catch(console.error)
+    .then(response => {
+      resolve(response)
+    })
+  })
+}
 module.exports = {
   getUserPoints: getUserPoints,
   setUserPoints: setUserPoints,
   addUserPoints: addUserPoints,
-  getHighscores: getHighscores
+  getHighscores: getHighscores,
+  setBJHand: setBJHand,
+  getActiveBJHand: getActiveBJHand,
+  startBJHand: startBJHand
 };
